@@ -1,0 +1,23 @@
+body {
+    font-family: sans-serif;
+    margin: 0;
+    background-color: #f4f4f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    text-align: center;
+}
+
+.card-header {
+    max-width: 500px;
+    margin: auto;
+}
+
+sl-card h1 {
+    font-size: 1.5em; /* Adjusted to be slightly smaller to fit well within the card header */
+    margin: 0;
+} 
