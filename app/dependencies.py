@@ -11,10 +11,18 @@ from app.core.config import settings
 # This scheme can be used if we decide to make token URL-based for some endpoints
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/tokens") # Example, if using OAuth2 style token issuing endpoint for forms
 
-api_key_header_auth = APIKeyHeader(name="Authorization", auto_error=True)
+api_key_header_auth = APIKeyHeader(name="Authorization", auto_error=False)
 
 async def get_current_token(request: Request, token_str: str = Depends(api_key_header_auth), db: AsyncIOMotorDatabase = Depends(get_database)) -> TokenModel:
     print(f"DEBUG: Received Authorization header: '{token_str}'")
+    
+    if token_str is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authorization header missing. Please provide a Bearer token.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
     if not token_str or not token_str.lower().startswith("bearer "):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
