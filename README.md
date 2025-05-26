@@ -1,89 +1,99 @@
 # 🛡️ NoBadPix – Image Moderation API & Frontend
 
-**NoBadPix** is a containerized image moderation system designed to automatically detect and block harmful or unwanted imagery such as:
-
-- Graphic violence
-- Hate symbols
-- Explicit nudity
-- Self-harm depictions
-- Extremist propaganda
-
-Built using **FastAPI**, it features a secure RESTful API, token-based authentication, MongoDB for tracking and access control, and a lightweight frontend interface built with **HTMX** and **Shoelace UI**. Image analysis is powered by the **Azure Content Safety API**.
+**NoBadPix** is an image moderation system designed to automatically detect and block harmful or unwanted imagery. It uses a **FastAPI** backend, **MongoDB** for data storage, and the **Azure Content Safety API** for analysis, with a lightweight **HTMX** and **Shoelace UI** frontend.
 
 ---
 
-## ✨ Objectives
+## ⚙️ Tech Stack
 
-- Design a well-structured and secure REST API using FastAPI
-- Implement robust token-based authentication and authorization
-- Model and track API usage with MongoDB
-- Containerize the full stack using Docker
-- Build a simple, modern frontend UI to interact with the moderation API
-- Follow best practices in code organization, Git workflow, and documentation
+- **Backend:** Python, FastAPI
+- **Database:** MongoDB
+- **Moderation Engine:** Azure Content Safety API
+- **Frontend:** HTMX, Shoelace UI
 
 ---
 
-## ⚙️ Stack Overview
+## 🚀 Running Locally
 
-### 🔧 Backend
-- **Language:** Python
-- **Framework:** FastAPI
-- **Auth:** Bearer token-based, with admin-only controls
-- **Database:** MongoDB for storing issued tokens and tracking usage
-- **Moderation:** Azure Content Safety API
+1.  **Clone the repository:**
+    ```bash
+    git clone git@github.com:Arqamz/nobadpix.git
+    cd nobadpix
+    ```
 
-### 🎨 Frontend
-- **Tech Stack:** HTMX + Shoelace UI
-- **Purpose:** Lightweight dashboard to:
-  - Authenticate with token
-  - Upload images for moderation
-  - Display moderation reports with category and confidence levels
+2.  **Set up your environment:**
+    - Create a Python virtual environment and install dependencies:
+      ```bash
+      python -m venv .venv
+      source .venv/bin/activate
+      pip install -r requirements.txt
+      ```
+    - Create a `.env` file by copying the example file:
+      ```bash
+      cp .env.example .env
+      ```
+    - Now, edit the `.env` file and provide your specific values.
+      The following variables **must be set** by you:
+        - `MONGODB_CONNECTION_STRING`: Your full MongoDB connection string.
+        - `AZURE_CONTENT_SAFETY_ENDPOINT`: Your Azure Content Safety service endpoint.
+        - `AZURE_CONTENT_SAFETY_KEY`: Your Azure Content Safety API key.
+        - `SECRET_KEY`: A strong, random secret key for JWT token generation. The one in `.env.example` is a placeholder.
 
-### 📦 Infrastructure
-- **Containerized** with Docker
-- Optional `docker-compose.yml` for multi-service orchestration
-- Git-based workflow (feature branches, PRs, CI hooks)
+3.  **Run the FastAPI application (from the `nobadpix/` directory):**
+    ```bash
+    uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    ```
+    The application will be available at `http://localhost:8000`.
+
+---
+
+## 🐳 Running with Docker
+
+Alternatively, you can run NoBadPix using Docker.
+
+1.  **Build the Docker image:**
+    ```bash
+    sudo docker build -t nobadpix .
+    ```
+
+2.  **Run the Docker container:**
+    ```bash
+    sudo docker run -d -p 7000:7000 nobadpix
+    ```
+    The application will then be accessible at `http://localhost:7000`. Please ensure that you have a `.env` file configured as described in the "Running Locally" section, as the Docker build will use it.
+
+---
+
+## 🌐 Live Deployment on Render
+
+You can try out a live version of NoBadPix deployed on Render:
+
+**URL:** [https://nobadpix.onrender.com/](https://nobadpix.onrender.com/)
+
+To test the API (moderating images or using admin features like generating new tokens), you can use the following Bearer token:
+`G5CkThwabhcceL3YzXApRgKFA7H8XqjqGDA1g9g2FB8`
 
 ---
 
 ## 📚 API Endpoints
 
+NoBadPix provides a RESTful API for its operations. For a detailed interactive API documentation, once the application is running (either locally or via the live deployment), please visit:
+
+-   `/docs` for Swagger UI
+-   `/redoc` for ReDoc documentation
+
+Key functionalities include:
+
 ### 🔐 Authentication (Admin Only)
-- `POST /auth/tokens` – Create a new token
-- `GET /auth/tokens` – List all tokens
-- `DELETE /auth/tokens/{token}` – Revoke a specific token
+- Creating new access tokens
+- Listing existing tokens
+- Revoking tokens
 
 ### 🧠 Moderation
-- `POST /moderate` – Analyze uploaded image content via Azure API and return a safety report
+- Analyzing uploaded image content
 
-All routes are secured with bearer token authentication. Admin routes require tokens with `isAdmin: true`.
-
----
-
-## 🧪 Git Workflow
-
-- `main` — production-ready code
-- Feature branches for development and testing
-- Code review through pull requests
-- CI checks for linting, formatting, and type validation
+All routes are secured with bearer token authentication. Admin routes require tokens with admin privileges.
 
 ---
 
-## 🚢 Docker
-
-- FastAPI backend exposed on port `7000`
-- Frontend served statically or via an ASGI static mount
-- Environment variables provided via `.env` for MongoDB URI and Azure API keys
-
----
-
-## 🖥️ Frontend Features
-
-- Token input (manual or generated)
-- File upload form for image moderation
-- Result display with categories and confidence scores
-- Styled and responsive UI using Shoelace components
-
----
-
-This project showcases clean architecture, secure API design, modern frontend techniques without heavy JavaScript tooling, and a full Dockerized development lifecycle.
+This project showcases clean architecture, secure API design, and modern frontend techniques.
