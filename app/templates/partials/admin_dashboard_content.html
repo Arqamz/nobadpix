@@ -1,0 +1,28 @@
+<!-- This is the main content for the Admin Panel tab -->
+<div id="admin-section-content">
+    <h4 class="mt-4">Create New Token</h4>
+    <form id="create-token-form" 
+          hx-post="/admin/auth/tokens" 
+          hx-target="#admin-section-content" {# Target the whole admin content area to refresh form and list #}
+          hx-swap="innerHTML" 
+          {# hx-indicator="#admin-indicator"  You might want a spinner #}
+          hx-headers='js:{"Authorization": "Bearer " + document.getElementById("apiTokenInput").value}'
+          class="mb-3 p-3 border rounded bg-light">
+        <div class="mb-3">
+            <label for="description" class="form-label">Description (Optional)</label>
+            <input type="text" class="form-control" id="description" name="description" placeholder="E.g., 'Client X API Key'">
+        </div>
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="is_admin" name="is_admin" value="true">
+            <label class="form-check-label" for="is_admin">Is Admin Token?</label>
+        </div>
+        <button type="submit" class="btn btn-primary">Create Token</button>
+    </form>
+
+    <hr>
+
+    <div id="token-list-display" class="mt-3">
+        <!-- existing_tokens_html will be injected here by the route -->
+        {{ existing_tokens_html | safe if existing_tokens_html else "<p>Loading tokens...</p>" }}
+    </div>
+</div> 

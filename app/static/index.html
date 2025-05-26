@@ -4,19 +4,233 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NoBadPix</title>
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/themes/light.css" />
-    <link rel="stylesheet" href="/static/css/style.css">
-    <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/shoelace.js"></script>
-    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <!-- Favicon -->
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.5"></script>
+    <style>
+        body {
+            padding-top: 70px; /* Adjusted for fixed navbar */
+            background-color: #f8f9fa; /* Light grey background */
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .tab-content { margin-top: 20px; }
+        #moderation-result span.badge {
+            font-size: 0.9em;
+            padding: 0.5em 0.75em;
+        }
+        #moderation-result span.severity-text {
+            display: inline-block;
+            padding: 0.35em 0.65em;
+            font-size: .85em;
+            font-weight: 700;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: .25rem;
+            margin-right: 5px;
+        }
+        .severity-0 { background-color: #d1e7dd; color: #0f5132; border: 1px solid #badbcc;}
+        .severity-1 { background-color: #cce5ff; color: #004085; border: 1px solid #b8daff;}
+        .severity-2 { background-color: #fff3cd; color: #664d03; border: 1px solid #ffecb5;}
+        .severity-3 { background-color: #f8d7da; color: #58151c; border: 1px solid #f1c2c7;}
+        .severity-4 { background-color: #f5c6cb; color: #721c24; border: 1px solid #f5c6cb;}
+        .severity-5 { background-color: #ef5350; color: white; border: 1px solid #ef5350;}
+        .severity-6 { background-color: #d9534f; color: white; border: 1px solid #d9534f;}
+
+        .container {
+            flex-grow: 1;
+        }
+        .footer {
+            background-color: #e9ecef;
+            padding: 1rem 0;
+            text-align: center;
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-top: auto; /* Pushes footer to bottom */
+        }
+        /* Style for htmx-indicator (default is opacity 0, htmx-request makes it 1) */
+        .htmx-indicator{
+            display: none;
+        }
+        .htmx-request .htmx-indicator{
+            display: inline-block;
+        }
+        .htmx-request.htmx-indicator{
+            display: inline-block;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <sl-card class="card-header">
-            <div slot="header">
-                <h1>NoBadPix</h1>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">NoBadPix</a>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="https://github.com/arqamz/nobadpix" target="_blank" title="GitHub Repository">
+                        <i class="bi bi-github" style="font-size: 1.5rem;"></i>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <!-- Main content column -->
+            <div class="col-md-8">
+                <h1 class="text-center mb-4">NoBadPix Image Moderation</h1>
+                
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="moderate-tab" data-bs-toggle="tab" data-bs-target="#moderate" type="button" role="tab" aria-controls="moderate" aria-selected="true">Image Moderation</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="admin-tab" data-bs-toggle="tab" data-bs-target="#admin" type="button" role="tab" aria-controls="admin" aria-selected="false"
+                                hx-get="/admin/auth/tokens" hx-trigger="click" hx-target="#admin-content" hx-swap="innerHTML"
+                                hx-headers='js:{"Authorization": "Bearer " + document.getElementById("apiTokenInput").value}'>
+                            Admin Panel
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tab panes -->
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="moderate" role="tabpanel" aria-labelledby="moderate-tab">
+                        <h2 class="mt-3">Moderate Image</h2>
+                        <form hx-post="/moderate" hx-target="#moderation-result" hx-swap="innerHTML" hx-encoding="multipart/form-data"
+                              hx-headers='js:{"Authorization": "Bearer " + document.getElementById("apiTokenInput").value}' hx-indicator="#moderationSpinner">
+                            <div class="mb-3">
+                                <label for="fileInput" class="form-label">Select Image:</label>
+                                <input type="file" class="form-control" name="file" id="fileInput" accept="image/*" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <span class="spinner-border spinner-border-sm htmx-indicator" role="status" aria-hidden="true" id="moderationSpinner"></span>
+                                Moderate
+                            </button>
+                        </form>
+                        <div id="moderation-result" class="mt-4">
+                            <!-- Moderation report will be loaded here by HTMX -->
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="admin" role="tabpanel" aria-labelledby="admin-tab">
+                        <h2 class="mt-3">Admin Panel</h2>
+                        <div id="admin-content" class="pt-2">
+                            <!-- Admin content (token management) will be loaded here by HTMX -->
+                            <p>Click the 'Admin Panel' tab to load content. Ensure your API token is entered in the sidebar.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <p>Welcome to NoBadPix - your image moderation solution.</p>
-        </sl-card>
+
+            <!-- Sidebar for API Token -->
+            <div class="col-md-4">
+                <div class="sticky-top" style="top: 80px;"> <!-- Adjust top for fixed navbar height -->
+                    <h4 class="mt-md-0 mt-4">API Access</h4>
+                    <hr class="d-md-none">
+                    <div class="mb-3 p-3 border rounded bg-light shadow-sm">
+                        <label for="apiTokenInput" class="form-label">API Bearer Token:</label>
+                        <input type="password" class="form-control" id="apiTokenInput" placeholder="Paste your Bearer token here">
+                        <small class="form-text text-muted">Required for all operations.</small>
+                    </div>
+                    <div class="mt-3 p-3 border rounded bg-light shadow-sm">
+                        <h5>Instructions:</h5>
+                        <p><small>Enter your valid Bearer token to use the Image Moderation and Admin Panel features. If this is your first time, an initial admin token is printed in the server console on startup.</small></p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <footer class="footer mt-auto py-3 bg-light">
+        <div class="container text-center">
+            <span class="text-muted">Arqam Zia - <span id="currentYear"></span></span>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle (Popper.js and Bootstrap JS) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        function getApiToken() {
+            const tokenInput = document.getElementById('apiTokenInput');
+            return tokenInput ? tokenInput.value.trim() : null;
+        }
+
+        document.body.addEventListener('htmx:configRequest', function(evt) {
+            const token = getApiToken();
+            const requestPath = evt.detail.path;
+
+            // For protected routes, ensure token is present before sending
+            if (requestPath.includes('/admin/auth/') || requestPath.includes('/moderate')) {
+                if (!token) {
+                    evt.preventDefault(); // Stop the HTMX request
+                    const targetId = evt.target.getAttribute('hx-target') || (evt.target.closest('[hx-target]') ? evt.target.closest('[hx-target]').getAttribute('hx-target') : null);
+                    let errorDisplayTarget = null;
+                    if (targetId) {
+                        errorDisplayTarget = document.querySelector(targetId.startsWith('#') ? targetId : '#' + targetId);
+                    }
+                    if (!errorDisplayTarget && requestPath.includes('/admin/auth/')){
+                        errorDisplayTarget = document.getElementById('admin-content');
+                    }
+                     if (!errorDisplayTarget && requestPath.includes('/moderate')){
+                        errorDisplayTarget = document.getElementById('moderation-result');
+                    }
+
+                    if (errorDisplayTarget) {
+                        errorDisplayTarget.innerHTML = "<div class='alert alert-warning mt-3'>Please enter your API Bearer Token above to access this feature. Ensure the token has the necessary permissions.</div>";
+                    } else {
+                        alert("Please enter your API Bearer Token to proceed. Ensure the token has the necessary permissions."); // Fallback
+                    }
+                    return;
+                }
+                // If token is present, ensure the header is set (redundant if hx-headers is always used, but good for safety)
+                if (!evt.detail.headers['Authorization']) {
+                     evt.detail.headers['Authorization'] = 'Bearer ' + token;
+                }
+            }
+        });
+
+        document.body.addEventListener('htmx:responseError', function(evt) {
+            console.error("HTMX Response Error:", evt.detail.xhr);
+            const targetElement = evt.detail.target;
+            let errorMsg = "An unknown error occurred.";
+            if (evt.detail.xhr.responseText) {
+                try {
+                    const errJson = JSON.parse(evt.detail.xhr.responseText);
+                    if (errJson.detail) {
+                        errorMsg = errJson.detail;
+                    }
+                } catch (e) { 
+                    // Response was not JSON, use the raw text if it's not too long or is HTML
+                    if (evt.detail.xhr.responseText.length < 500 && (evt.detail.xhr.getResponseHeader("Content-Type")||"").includes("text/html")) {
+                        errorMsg = evt.detail.xhr.responseText;
+                    } else if (evt.detail.xhr.responseText.length < 500) {
+                        errorMsg = evt.detail.xhr.responseText;
+                    }
+                }
+            }
+            
+            // Display error near the element that triggered it, or in a general location
+            // For now, putting it inside the target for admin-content and moderation-result
+            if (targetElement && (targetElement.id === 'admin-content' || targetElement.id === 'moderation-result')) {
+                targetElement.innerHTML = `<div class='alert alert-danger mt-3'>Error: ${errorMsg}</div>`;
+            } else {
+                 // Fallback for other errors - you might want a dedicated global error display area
+                 const fallbackErrorDisplay = document.getElementById('moderation-result') || document.getElementById('admin-content');
+                 if(fallbackErrorDisplay) {
+                    fallbackErrorDisplay.innerHTML = `<div class='alert alert-danger mt-3'>Error: ${errorMsg}</div>`;
+                 }
+            }
+        });
+    </script>
 </body>
 </html> 

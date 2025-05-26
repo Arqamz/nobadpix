@@ -1,0 +1,66 @@
+<div class="card">
+    <div class="card-header">
+        Moderation Report for: <strong>{{ report.filename }}</strong> ({{ report.content_type }})
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-8">
+                <p class="card-text"><strong>Overall Safety:</strong> 
+                    {% if report.is_safe_overall %}
+                        <span class="badge bg-success">Safe</span>
+                    {% else %}
+                        <span class="badge bg-danger">Potentially Unsafe</span>
+                    {% endif %}
+                </p>
+                
+                {% if report.message %}
+                    <p class="card-text"><strong>Message:</strong> {{ report.message }}</p>
+                {% endif %}
+
+                {% if report.error_details %}
+                    <div class="alert alert-warning" role="alert">
+                        <strong>Error Details:</strong> {{ report.error_details }}
+                    </div>
+                {% endif %}
+            </div>
+            {% if report.image_base64_preview %}
+            <div class="col-md-4">
+                <h6 class="card-title">Preview:</h6>
+                <img src="data:{{ report.content_type }};base64,{{ report.image_base64_preview }}" class="img-fluid rounded mb-2" alt="Image Preview" style="max-height: 200px; object-fit: contain;">
+            </div>
+            {% endif %}
+        </div>
+
+        {% if report.categories %}
+            <h5 class="card-title mt-3">Category Severity:</h5>
+            <!-- Plot Display -->
+            {% if report.severity_plot_base64 %}
+            <div class="text-center my-3">
+                <img src="data:image/png;base64,{{ report.severity_plot_base64 }}" class="img-fluid border rounded" alt="Severity Plot">
+            </div>
+            {% endif %}
+            
+            <ul class="list-group list-group-flush">
+                {% for category, severity in report.categories.items() %}
+                    <li class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ category.replace("_", " ").title() }}</h6>
+                            <small class="severity-text severity-{{ severity }}">Severity: {{ severity }}</small>
+                        </div>
+                        <div class="progress" style="height: 20px;" role="progressbar" aria-label="{{ category.replace('_', ' ').title() }} severity" aria-valuenow="{{ severity }}" aria-valuemin="0" aria-valuemax="6">
+                            <div class="progress-bar severity-{{ severity }}" style="width: {{ (severity / 6) * 100 }}%;"></div>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            {% if not report.error_details %}
+            <p class="card-text">No detailed categories reported or analysis pending.</p>
+            {% endif %}
+        {% endif %}
+
+    </div>
+    <div class="card-footer text-muted">
+        Report generated at {{ report.generated_at }}
+    </div>
+</div>
